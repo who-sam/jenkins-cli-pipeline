@@ -5,7 +5,6 @@ pipeline {
         FRONTEND_IMAGE = 'whosam1/notes-app-frontend'
         BACKEND_IMAGE = 'whosam1/notes-app-backend'
         GITHUB_TOKEN = credentials('github-token')
-        // Use commit hash for immutable tags
         IMAGE_TAG = "${GIT_COMMIT}"
     }
     stages {
@@ -48,30 +47,6 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
-            parallel {
-                stage('Test Frontend') {
-                    steps {
-                        script {
-                            // Add your frontend tests here
-                            echo "Running frontend tests..."
-                        }
-                    }
-                }
-                stage('Test Backend') {
-                    steps {
-                        script {
-                            // Uncomment and modify your backend tests
-                            // dir('backend') {
-                            //     sh 'go test ./...'
-                            // }
-                            echo "Running backend tests..."
-                        }
-                    }
-                }
-            }
-        }
-
         stage('Push to Docker Hub') {
             parallel {
                 stage('Push Frontend') {
@@ -101,7 +76,6 @@ pipeline {
         stage('Update K8s Manifests') {
             steps {
                 script {
-                    // Fix: Update the correct path (remove ArgoCD-Pipeline subdirectory)
                     dir('manifests-repo') {
                         sh """
                         # Update frontend deployment with new image
@@ -127,11 +101,11 @@ pipeline {
             steps {
                 script {
                     dir('manifests-repo') {
+                        // Use the environment variable directly to avoid Groovy string interpolation warning
                         sh """
                         git config user.name "jenkins"
                         git config user.email "jenkins@example.com"
                         git add frontend-deployment.yaml backend-deployment.yaml
-                        git status
                         git commit -m "CI: Update Notes App image tags to ${IMAGE_TAG}"
                         git push https://${GITHUB_TOKEN}@github.com/who-sam/argocd-pipeline.git main
                         """
@@ -151,15 +125,15 @@ pipeline {
                 docker rmi $BACKEND_IMAGE:$IMAGE_TAG || true
                 docker rmi $BACKEND_IMAGE:latest || true
                 """
+                // Use deleteDir instead of cleanWs
+                deleteDir()
             }
-            cleanWs()
         }
         success {
             echo "Pipeline completed successfully! ArgoCD should now sync the new images."
         }
         failure {
             echo "Pipeline failed! Check the logs for details."
-            // You can add notification steps here (email, Slack, etc.)
         }
     }
 }
