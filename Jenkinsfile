@@ -1,9 +1,11 @@
 pipeline {
   agent any
+
   environment {
     DOCKERHUB_REPO = "whosam1/hello-artifacts"
     IMAGE_TAG = "${env.BUILD_NUMBER}"
   }
+
   stages {
     stage('Checkout') {
       steps {
