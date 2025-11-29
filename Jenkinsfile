@@ -28,7 +28,7 @@ pipeline {
                 dir('manifests-repo') {
                     git branch: 'main', 
                         credentialsId: 'github-token',
-                        url: 'https://github.com/who-sam/argocd-pipeline.git'
+                        url: 'https://github.com/who-sam/mind-argocd-pipeline.git'
                 }
             }
         }
@@ -154,7 +154,7 @@ pipeline {
                             Build: ${BUILD_DATE}
                             Commit: ${env.GIT_COMMIT}"
                             
-                            git push https://${GITHUB_TOKEN}@github.com/who-sam/argocd-pipeline.git main
+                            git push https://${GITHUB_TOKEN}@github.com/who-sam/mind-argocd-pipeline.git main
                         fi
                         """
                     }
